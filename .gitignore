@@ -6,7 +6,7 @@ lambda_layer
 lambda_venv
 *.pptx
 __pycache__
-*.png
+
 /lambda/test.py
 # CDK asset staging directory
 .cdk.staging
