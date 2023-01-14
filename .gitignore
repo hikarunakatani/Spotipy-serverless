@@ -1,0 +1,14 @@
+*.js
+!jest.config.js
+*.d.ts
+node_modules
+lambda_layer
+lambda_venv
+*.pptx
+__pycache__
+*.png
+/lambda/test.py
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+#secret.json
