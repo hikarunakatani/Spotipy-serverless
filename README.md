@@ -2,16 +2,18 @@
 
 SpotifyAPIを用いたサーバーレスアプリをAWS CDKで実装したリポジトリです。
 
+## システム構成
 ![システム構成](architecture/architecture.png)
+## CI/CD
 ![CI/CD](architecture/cicd.png)
 
 ## コンセプト
 Spotify上でランダムな楽曲を検索し、プレイリストを作成します。
 
 ## Prerequisites
--AWS CLI
--AWSアカウント
--Node.js
--AWS CDK
--Python
+- AWS CLI
+- AWSアカウント
+- Node.js
+- AWS CDK
+- Python
 
