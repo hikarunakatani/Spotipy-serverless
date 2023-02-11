@@ -1,6 +1,6 @@
 import traceback
 import json
-import spotipy_lambda as sp
+import main 
 from common import send_email
 import sys
 import io
@@ -11,7 +11,7 @@ def handler(event, context):
         # Output values of console into string variable
         with io.StringIO() as console_log:
             sys.stdout = console_log
-            sp.diggin_in_the_crate(1)
+            main.diggin_in_the_crate(1)
             log_value = console_log.getvalue()
             sys.stdout = sys.__stdout__
         

@@ -10,6 +10,18 @@ import json
 
 scope = 'playlist-read-private playlist-modify-public'
 
+def authenticate(local_test_flag=False):
+    """Execute authentication on process spotify.
+    """
+    secret = get_secret(local_test_flag)
+
+    token = util.prompt_for_user_token(
+        secret['username'], scope, secret['my_id'], secret['my_secret'], secret['redirect_uri'])
+
+    sp = spotipy.Spotify(auth=token)
+
+    return sp
+
 
 def get_random_search():
     """Get a random character of unicode.
@@ -69,19 +81,6 @@ def get_secret(local_test_flag=False):
         secret = ast.literal_eval(secret_raw)
 
     return secret
-
-
-def authenticate(local_test_flag=False):
-    """Execute authentication on process spotify.
-    """
-    secret = get_secret(local_test_flag)
-
-    token = util.prompt_for_user_token(
-        secret['username'], scope, secret['my_id'], secret['my_secret'], secret['redirect_uri'])
-
-    sp = spotipy.Spotify(auth=token)
-
-    return sp
 
 
 def send_email(log_value):
