@@ -5,26 +5,27 @@ import { SpotipyPipelineStack } from "../lib/pipeline-stack";
 import { FrontendStack } from "../lib/frontend-stack";
 import { BackendStack } from "../lib/backend-stack";
 
+const pjPrefix = 'Spotipy';
+
 const app = new cdk.App();
 
-// For pipeline deployment
-//new SpotipyPipelineStack(app, "SpotipyPipelineStack")
-
-
-// For local deployment
 // ----------------------- Load context variables ------------------------------
 const envVals = app.node.tryGetContext('envVals')
 
 const emailAddress = envVals['emailAddress'];
 const ipAddress = envVals['ipAddress'];
 
-const backend = new BackendStack(app, "BackendStack", {
-    emailAddress: emailAddress,
-});
+// For local deployment
+//const backend = new BackendStack(app, `${pjPrefix}BackendStack`, {
+//    emailAddress: emailAddress,
+//});
+//
+//const frontend = new FrontendStack(app, `${pjPrefix}FrontendStack`, {
+//    lambdaFunc: backend.lambdaFunc,
+//    ipAddress: ipAddress
+//});
 
-const frontend = new FrontendStack(app, "FrontendStack", {
-    lambdaFunc: backend.lambdaFunc,
-    ipAddress: ipAddress
-});
+// For pipeline deployment
+new SpotipyPipelineStack(app, `${pjPrefix}PipelineStack`, {});
 
 

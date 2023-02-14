@@ -1,8 +1,8 @@
 import * as cdk from 'aws-cdk-lib'
 import * as codecommit from 'aws-cdk-lib/aws-codecommit';
 import { Construct } from 'constructs'
-import { SpotipyPipelineStage } from './pipeline-stage';
 import { CodeBuildStep, CodePipeline, CodePipelineSource } from 'aws-cdk-lib/pipelines';
+import { SpotipyPipelineStage } from '../lib/pipeline-stage'
 
 export class SpotipyPipelineStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {

@@ -18,7 +18,7 @@ username = secret['username']
 playlist_id = secret['playlist_id']
 audio_features_names = ['danceability', 'energy', 'key', 'loudness', 'mode',
                         'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']
-genre_seeds = sp.recommendation_genre_seeds()
+genre_seeds = sp.recommendation_genre_seeds()['genres']
 
 
 def diggin_in_the_crate(num_tracks=30, remove_current_items=False):
@@ -34,7 +34,6 @@ def diggin_in_the_crate(num_tracks=30, remove_current_items=False):
     # Delete existing songs
     if current_items['items'] and remove_current_items:
         remove_items = []
-
         for items in current_items['items']:
             remove_items.append(items['track']['uri'])
 
@@ -52,37 +51,30 @@ def diggin_in_the_crate(num_tracks=30, remove_current_items=False):
     print("Start searching...")
 
     while len(track_ids) < num_tracks:
-
         random_market = country_codes[random.randint(0, country_num - 1)]
         query = common.get_random_search()
         random_offset = random.randint(0, 999)
         results = sp.search(type='track', offset=random_offset,
                             limit=1, q=query, market=[random_market])
 
-        if results is not None:
-            if len(results['tracks']['items']) >= 1:
-
-                track = results['tracks']['items'][0]
-                track_name = track['name']
-
-                # When there are multiple artists
-                if len(track['artists']) >= 2:
-                    for artist in track['artists']:
-                        track_artists.append(artist['name'])
-                else:
-                    track_artists.append(
-                        track['artists'][0]['name'])
-
-                # Add track ids
-                track_ids.append((track['id']))
-                sp.user_playlist_add_tracks(
-                    username, playlist_id, track_ids[-1:])
-                print('Added {} - {} to the playlist.'.format(track_name,
-                                                              ','.join(track_artists)))
-                track_artists.clear()
-
+        if results and len(results['tracks']['items']) >= 1:
+            track = results['tracks']['items'][0]
+            track_name = track['name']
+            # When there are multiple artists
+            if len(track['artists']) >= 2:
+                for artist in track['artists']:
+                    track_artists.append(artist['name'])
             else:
-                pass
+                track_artists.append(
+                    track['artists'][0]['name'])
+
+            # Add track ids
+            track_ids.append((track['id']))
+            sp.user_playlist_add_tracks(
+                username, playlist_id, track_ids[-1:])
+            print(
+                f"Added {track_name} - {','.join(track_artists)} to the playlist.")
+            track_artists.clear()
 
     print("Updated playlist.")
 
@@ -90,14 +82,12 @@ def diggin_in_the_crate(num_tracks=30, remove_current_items=False):
 def calc_genres_audio_features():
 
     genres_audio_features = []
-
     audio_features_list = [[] for i in range(len(audio_features_names))]
 
-    for genre in genre_seeds['genres']:
-        results = sp.recommendations(seed_genres=[genre], limit=100)
+    for genre in genre_seeds:
+        results = sp.recommendations(seed_genres=[genre], limit=1)
 
         for track in results['tracks']:
-
             track_id = track['id']
             track_audio_features = sp.audio_features(track_id)[0]
 
@@ -108,9 +98,9 @@ def calc_genres_audio_features():
         genres_audio_features.append(
             [np.mean(audio_features) for audio_features in audio_features_list])
 
-        print(genre, 'audio features has been calculated.')
+        print(f'{genre} audio features has been calculated.')
 
-    with open('./genres_audio_features.csv', 'w') as f:
+    with open('./genres_audio_features.csv', 'w', newline="") as f:
         writer = csv.writer(f)
         writer.writerows(genres_audio_features)
 
@@ -118,12 +108,10 @@ def calc_genres_audio_features():
 def judge_track_genre():
 
     playlist_items = sp.playlist_items(playlist_id)
-    i = 1
 
-    for track in playlist_items['items']:
+    for index, track in enumerate(playlist_items['items']):
         playlist_item_audio_features = []
         playlist_item_track_id = track['track']['id']
-
         audio_features = sp.audio_features(playlist_item_track_id)[0]
 
         for audio_features_name in audio_features_names:
@@ -131,17 +119,35 @@ def judge_track_genre():
                 audio_features[audio_features_name])
 
         mse = []
-        playlist_item_audio_features = np.array(playlist_item_audio_features)
+        playlist_item_audio_features = np.array(
+            playlist_item_audio_features, dtype=object)
 
-        for genre_audio_feature, genre in calc_genres_audio_features():
-            genre_audio_feature = np.array(genre_audio_feature)
-            mse.append(
-                np.mean((playlist_item_audio_features - genre_audio_feature) ** 2))
-            print('calculating the mse of the following genre:', genre)
+        with open('./genres_audio_features.csv') as f:
+            reader = csv.reader(f)
+
+            for genre_audio_feature, genre in zip(reader, genre_seeds):
+                genre_audio_feature_float = []
+
+                for item in genre_audio_feature:
+                    genre_audio_feature_float.append(float(item))
+
+                genre_audio_feature_ndarray = np.array(
+                    genre_audio_feature_float, dtype=object)
+                mse.append(
+                    np.mean((playlist_item_audio_features - genre_audio_feature_ndarray) ** 2))
 
         min_mse_index = mse.index(min(mse))
-        print(i, 'th song genre is ', genre_seeds['genres'][min_mse_index])
-        i = i+1
+        print(f'Song{index} genre is {genre_seeds[min_mse_index]}')
+
+
+def test(genre):
+    results = sp.recommendations(seed_genres=[genre], limit=50)
+
+    track_ids = []
+    for track in results['tracks']:
+        track_ids.append((track['id']))
+        sp.user_playlist_add_tracks(
+            username, playlist_id, track_ids[-1:])
 
 
 def main():
@@ -158,7 +164,8 @@ def main():
 
     parser.add_argument('--remove_current_items', type=bool,
                         help='Whether to remove corrent songs or not')
-
+    parser.add_argument('--genre', type=str,
+                        help='song genre to add to playlist')
     args = parser.parse_args()
 
     if args.function == 'ditc':
@@ -167,16 +174,12 @@ def main():
                                 remove_current_items=args.remove_current_items)
         else:
             print("Please set the number of tracks to search.")
-
     elif args.function == 'calc_genres_audio_features':
         calc_genres_audio_features()
-
     elif args.function == 'judge_track_genre':
         judge_track_genre()
-
     elif args.function == 'test':
-        test()
-
+        test(args.genre)
     else:
         print("Please specify the fucntion name properly.")
 

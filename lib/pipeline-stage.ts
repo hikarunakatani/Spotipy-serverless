@@ -1,7 +1,10 @@
 import * as cdk from 'aws-cdk-lib';
 import { Stage, CfnOutput, StageProps, CfnOutputProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { SpotipyStack } from "../lib/spotipy-stack";
+import { BackendStack } from "../lib/backend-stack";
+import { FrontendStack } from "../lib/frontend-stack";
+
+const pjPrefix = 'Spotipy';
 
 const app = new cdk.App();
 
@@ -18,11 +21,15 @@ export class SpotipyPipelineStage extends Stage {
     constructor(scope: Construct, id: string, props?: StageProps) {
         super(scope, id, props);
 
-        const Spotipy = new SpotipyStack(this, 'SpotipyStack', {
+        const backend = new BackendStack(this, `${pjPrefix}BackendStack`, {
             emailAddress: emailAddress,
-            ipAddress: ipAddress,
+        });
+        
+        const frontend = new FrontendStack(this, `${pjPrefix}FrontendStack`, {
+            lambdaFunc: backend.lambdaFunc,
+            ipAddress: ipAddress
         });
 
-        this.APIEndpoint = Spotipy.APIEndpoint;
+        this.APIEndpoint = frontend.APIEndpoint;
     }
 }
