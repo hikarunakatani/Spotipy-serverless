@@ -30,6 +30,8 @@ export class SpotipyPipelineStage extends Stage {
             ipAddress: ipAddress
         });
 
+        frontend.addDependency(backend);
+
         this.APIEndpoint = frontend.APIEndpoint;
     }
 }

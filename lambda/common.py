@@ -4,7 +4,6 @@ import ast
 import base64
 import boto3
 from botocore.exceptions import ClientError
-import random
 import os
 import json
 
@@ -21,28 +20,6 @@ def authenticate(local_test_flag=False):
     sp = spotipy.Spotify(auth=token)
 
     return sp
-
-
-def get_random_search():
-    """Get a random character of unicode.
-    """
-
-    rand_char = ''
-
-    while rand_char == '':
-        rand_char = chr(random.randint(0, 1114111))
-
-    random_search = ''
-
-    if random.randint(0, 2) == 0:
-        random_search = rand_char + '%'
-    elif random.randint(0, 2) == 1:
-        random_search = '%' + rand_char + '%'
-    else:
-        random_search = '%' + rand_char
-
-    return random_search
-
 
 def get_secret(local_test_flag=False):
     """Get secrets values from AWS Secrets Manager.

@@ -11,6 +11,7 @@ import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as wafv2 from "aws-cdk-lib/aws-wafv2";
 import * as fs from "fs";
 
+
 export interface FrontendStackProps extends cdk.StackProps {
   lambdaFunc: lambda.Function;
   ipAddress: string;
@@ -65,7 +66,7 @@ export class FrontendStack extends cdk.Stack {
       scope: "CLOUDFRONT",
       visibilityConfig: {
         cloudWatchMetricsEnabled: true,
-        metricName: "cfnWebACL",
+        metricName: "CFnWebACL",
         sampledRequestsEnabled: true,
       },
       rules: [
@@ -75,7 +76,6 @@ export class FrontendStack extends cdk.Stack {
           statement: {
             ipSetReferenceStatement: {
               arn: CfnIPset.attrArn,
-
             },
           },
           visibilityConfig: {
@@ -103,9 +103,34 @@ export class FrontendStack extends cdk.Stack {
     });
 
     // Define an APIGateway REST API
-    const apiGateway = new apigw.LambdaRestApi(this, "apiGateway", {
-      handler: props.lambdaFunc,
-    });
+    const apiGateway = new apigw.RestApi(this, "apiGateway", {})
+
+    // Add method request to execute Lambda function asynchronously
+    apiGateway.root.addResource('async').addMethod(
+      "POST",
+      new apigw.LambdaIntegration(props.lambdaFunc, {
+        proxy: false,
+        requestParameters: {
+          "integration.request.header.X-Amz-Invocation-Type": "'Event'"
+        },
+        // Convert JSONPath into JSON format
+        requestTemplates: {
+          "application/x-www-form-urlencoded": "{ \"body\": $input.json('$') }"
+        },
+        integrationResponses: [
+          {
+            statusCode: "202",
+          }
+        ]
+      }),
+      {
+        methodResponses: [
+          {
+            statusCode: "202",
+          }
+        ],
+      });
+
 
     this.APIEndpoint = new cdk.CfnOutput(this, "APIEndpoint", {
       value: apiGateway.url,
@@ -125,6 +150,7 @@ export class FrontendStack extends cdk.Stack {
         s3deploy.Source.data(
           "/index.html",
           htmlContent),
+        //s3deploy.Source.asset("./webcontent/sent.html")
       ],
       destinationBucket: websiteBucket,
       distribution: distribution,

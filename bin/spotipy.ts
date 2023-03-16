@@ -16,16 +16,18 @@ const emailAddress = envVals['emailAddress'];
 const ipAddress = envVals['ipAddress'];
 
 // For local deployment
-//const backend = new BackendStack(app, `${pjPrefix}BackendStack`, {
-//    emailAddress: emailAddress,
-//});
-//
-//const frontend = new FrontendStack(app, `${pjPrefix}FrontendStack`, {
-//    lambdaFunc: backend.lambdaFunc,
-//    ipAddress: ipAddress
-//});
+const backend = new BackendStack(app, `${pjPrefix}BackendStack`, {
+    emailAddress: emailAddress,
+});
+
+const frontend = new FrontendStack(app, `${pjPrefix}FrontendStack`, {
+    lambdaFunc: backend.lambdaFunc,
+    ipAddress: ipAddress
+});
+
+frontend.addDependency(backend); 
 
 // For pipeline deployment
-new SpotipyPipelineStack(app, `${pjPrefix}PipelineStack`, {});
+//new SpotipyPipelineStack(app, `${pjPrefix}PipelineStack`, {});
 
 

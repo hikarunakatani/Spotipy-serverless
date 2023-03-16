@@ -40,6 +40,9 @@ export class BackendStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
     });
 
+    // Grant lambda to write to CloudWatch Logs
+    lambdaRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaBasicExecutionRole"));
+
     // Grant lambda to get secrets values from secrets manager
     lambdaRole.addToPolicy(
       new iam.PolicyStatement({

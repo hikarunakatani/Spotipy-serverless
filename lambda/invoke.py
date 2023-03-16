@@ -3,19 +3,27 @@ import json
 import main 
 from common import send_email
 import sys
+import base64
+import urllib.parse
+from urllib.parse import parse_qs
 import io
 
 def handler(event, context):
     try:
         # Refer to the spotipy_lambda.py to get information of options.
         # Output values of console into string variable
-        with io.StringIO() as console_log:
-            sys.stdout = console_log
-            main.diggin_in_the_crate(1)
-            log_value = console_log.getvalue()
-            sys.stdout = sys.__stdout__
+        #with io.StringIO() as console_log:
+        #    sys.stdout = console_log
+        #    print(event)
+        #    #body = event['body']
+        #    #param = body['songnum']
+        #    #print(param)
+        #    main.diggin_in_the_crate(event['songnum'])
+        #    log_value = console_log.getvalue()
+        #    sys.stdout = sys.__stdout__
         
-        print(log_value)
+        print(event)
+        print(event['body'])
         send_email(log_value)
             
         return {

@@ -6,8 +6,16 @@
 
 <body>
     <h1>Welcome to Diggin' In The Crates</h1>
-    <p>Please press the button below to execute process.</p>
-    <a href="APIEndpoint">Press here to execute process</a>
+    <form action="APIEndpointasync" method="post">
+        <div>
+            <label>Please put the number of songs to add to your playlist.</label>
+            <input name="songnum" id="songnum" value="1">
+        </div>
+        <div>
+            <input type="submit" value="Execute process">
+        </div>
+    </form>
+    <!--a href="APIEndpoint">Press here to execute process</a -->
 </body>
 
 </html>
