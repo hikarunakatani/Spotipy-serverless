@@ -120,6 +120,8 @@ export class FrontendStack extends cdk.Stack {
         integrationResponses: [
           {
             statusCode: "202",
+            //TODO
+            //responseParameters: {}
           }
         ]
       }),
@@ -142,6 +144,7 @@ export class FrontendStack extends cdk.Stack {
     let htmlContent = fs.readFileSync(fileName, "utf8");
     const APIEndpoint = apiGateway.url
 
+    // Embed APIGateway Endpoint dynamically
     htmlContent = htmlContent.replace("APIEndpoint", APIEndpoint);
 
     // Deploy webcontent in the local folder into s3 bucket
@@ -150,7 +153,9 @@ export class FrontendStack extends cdk.Stack {
         s3deploy.Source.data(
           "/index.html",
           htmlContent),
-        //s3deploy.Source.asset("./webcontent/sent.html")
+        s3deploy.Source.data(
+          "/sent.html",
+          fs.readFileSync("./webcontent/sent.html", "utf8")),
       ],
       destinationBucket: websiteBucket,
       distribution: distribution,

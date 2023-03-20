@@ -6,15 +6,17 @@
     ],
     "exclude": [
       "README.md",
-      "cdk*.json",
       "**/*.d.ts",
       "**/*.js",
+      "**/*.pptx",
+      "**/*.png",
       "tsconfig.json",
       "package*.json",
       "yarn.lock",
       "node_modules",
       "lambda_layer",
-      "lambda_venv"
+      "lambda_venv",
+      "lambda/__pycache__"
     ]
   },
   "context": {
@@ -39,7 +41,7 @@
     "@aws-cdk/aws-ecs:disableExplicitDeploymentControllerForCircuitBreaker": true,
     "envVals": {
       "emailAddress": "hikamichael@hotmail.co.jp",
-      "ipAddress": "60.68.5.192/32"
+      "ipAddress": "111.217.126.209/32"
     }
   }
 }

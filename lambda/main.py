@@ -4,10 +4,10 @@ import common
 import argparse
 import random
 import os
-import csv
 
 local_test_flag = True
 
+# Unflag local testing flag when runnig on AWS environment
 if os.getenv('ON_AWS'):
     local_test_flag = False
 
@@ -15,9 +15,6 @@ sp = common.authenticate(local_test_flag)
 secret = common.get_secret(local_test_flag)
 username = secret['username']
 playlist_id = secret['playlist_id']
-audio_features_names = ['danceability', 'energy', 'key', 'loudness', 'mode',
-                        'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']
-genre_seeds = sp.recommendation_genre_seeds()['genres']
 
 
 def get_random_search():
@@ -42,23 +39,24 @@ def get_random_search():
 
 
 def diggin_in_the_crate(num_tracks=30, remove_current_items=False):
-    """Search completely random songs.
+    """Search completely random tracks.
 
 
     Args:
         num_tracks (int, optional): A number of tracks to add to playlist. Defaults to 30.
+        remove_current_items (bool, optional): Whether to remove current items in playlist or not.
     """
 
     current_items = sp.playlist_items(playlist_id)
 
-    # Delete existing songs
+    # Delete existing tracks
     if current_items['items'] and remove_current_items:
         remove_items = []
         for items in current_items['items']:
             remove_items.append(items['track']['uri'])
 
         sp.playlist_remove_all_occurrences_of_items(playlist_id, remove_items)
-        print("Removed current songs.")
+        print("Removed current tracks.")
 
     # Get a list of country codes
     country_codes = sp.country_codes
@@ -67,7 +65,7 @@ def diggin_in_the_crate(num_tracks=30, remove_current_items=False):
     track_ids = []
     track_artists = []
 
-    # Add songs
+    # Add tracks
     print("Start searching...")
 
     while len(track_ids) < num_tracks:
@@ -109,10 +107,10 @@ def main():
     parser.add_argument('function', help='specify a function to use')
 
     parser.add_argument('--num_tracks', type=int,
-                        help='A number of songs to add')
+                        help='A number of tracks to add')
 
     parser.add_argument('--remove_current_items', type=bool,
-                        help='Whether to remove corrent songs or not')
+                        help='Whether to remove corrent tracks or not')
     args = parser.parse_args()
 
     if args.function == 'ditc':
