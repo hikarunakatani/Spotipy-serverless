@@ -9,9 +9,11 @@ import json
 
 scope = 'playlist-read-private playlist-modify-public'
 
+
 def authenticate(local_test_flag=False):
-    """Execute authentication on process spotify.
+    """Execute authentication process on spotify.
     """
+
     secret = get_secret(local_test_flag)
 
     token = util.prompt_for_user_token(
@@ -21,8 +23,12 @@ def authenticate(local_test_flag=False):
 
     return sp
 
+
 def get_secret(local_test_flag=False):
     """Get secrets values from AWS Secrets Manager.
+
+    Args:
+        local_test_flag (bool, optional): Secret values are obtained from local json file when it's True. Defaults to False.
     """
 
     if local_test_flag == True:

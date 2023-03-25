@@ -5,6 +5,7 @@ import argparse
 import random
 import os
 
+# For local testing
 local_test_flag = True
 
 # Unflag local testing flag when runnig on AWS environment

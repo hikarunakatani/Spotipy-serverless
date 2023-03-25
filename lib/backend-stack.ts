@@ -1,6 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { Rule, Schedule } from "aws-cdk-lib/aws-events";
+import { Rule, RuleTargetInput, Schedule } from "aws-cdk-lib/aws-events";
 import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 import { Topic } from "aws-cdk-lib/aws-sns";
 import { EmailSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
@@ -28,6 +28,7 @@ export class BackendStack extends cdk.Stack {
 
     topic.addSubscription(new EmailSubscription(props.emailAddress));
 
+    // Store secret values for Secret Manager
     const secret = new secretsmanager.Secret(this, "secret", {
       generateSecretString: {
         secretStringTemplate: JSON.stringify(secretValue),
@@ -65,7 +66,7 @@ export class BackendStack extends cdk.Stack {
       handler: "invoke.handler",
       layers: [lambdaLayer],
       role: lambdaRole,
-      timeout: cdk.Duration.minutes(15),
+      timeout: cdk.Duration.minutes(10),
       environment: {
         TOPIC_ARN: topic.topicArn,
         SECRET_ARN: secret.secretArn,
@@ -79,12 +80,12 @@ export class BackendStack extends cdk.Stack {
     const ruleToInvokeLambda = new Rule(this, "ruleToInvokeLambda", {
       schedule: Schedule.cron({
         minute: "0",
-        hour: "0",
-        month: "*",
-        year: "*",
+        hour: "15",
         weekDay: "L",
       }),
-      targets: [new LambdaFunction(lambdaFunc)],
+      targets: [new LambdaFunction(lambdaFunc, {
+        event: RuleTargetInput.fromObject({ track_num: '1' }),
+      })],
     });
   }
 }

@@ -28,8 +28,9 @@ export class SpotipyPipelineStack extends cdk.Stack {
                     'npm run build',
                     'npx cdk synth'
                 ]
-            }
-            )
+                },
+            ),
+            selfMutation: false,
         });
 
         //Adds deploy stage 
@@ -44,7 +45,7 @@ export class SpotipyPipelineStack extends cdk.Stack {
                     ENDPOINT_URL: deploy.APIEndpoint
                 },
                 commands: [
-                    'curl -Ssf $ENDPOINT_URL'
+                    'curl -X POST --data-urlencode "track_num=1" "${ENDPOINT_URL}async"'
                 ]
             })
         )

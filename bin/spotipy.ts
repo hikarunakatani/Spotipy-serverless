@@ -23,8 +23,7 @@ const backend = new BackendStack(app, `${pjPrefix}BackendStack`, {
 const frontend = new FrontendStack(app, `${pjPrefix}FrontendStack`, {
     lambdaFunc: backend.lambdaFunc,
     ipAddress: ipAddress
-});
-
+})
 frontend.addDependency(backend); 
 
 // For pipeline deployment

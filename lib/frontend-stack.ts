@@ -58,7 +58,6 @@ export class FrontendStack extends cdk.Stack {
     });
 
     //Define a WebACL
-    //L2 construct is not available:2022/12/31
     const CfnWebACL = new wafv2.CfnWebACL(this, "CfnWebACL", {
       defaultAction: {
         block: {}
@@ -103,9 +102,16 @@ export class FrontendStack extends cdk.Stack {
     });
 
     // Define an APIGateway REST API
-    const apiGateway = new apigw.RestApi(this, "apiGateway", {})
+    const apiGateway = new apigw.RestApi(this, "apiGateway", {
+      restApiName: "diggin-in-the-crates"
+    });
 
-    // Add method request to execute Lambda function asynchronously
+    // Add method request to execute Lambda function (sync)
+    apiGateway.root.addResource('sync').addMethod(
+      "POST",
+      new apigw.LambdaIntegration(props.lambdaFunc))
+
+    // Add method request to execute Lambda function (async)
     apiGateway.root.addResource('async').addMethod(
       "POST",
       new apigw.LambdaIntegration(props.lambdaFunc, {
@@ -120,8 +126,6 @@ export class FrontendStack extends cdk.Stack {
         integrationResponses: [
           {
             statusCode: "202",
-            //TODO
-            //responseParameters: {}
           }
         ]
       }),
@@ -137,7 +141,7 @@ export class FrontendStack extends cdk.Stack {
     this.APIEndpoint = new cdk.CfnOutput(this, "APIEndpoint", {
       value: apiGateway.url,
       exportName: "APIEndpoint",
-    })
+    });
 
     // Generate html content
     const fileName = "./webcontent/index.html";
@@ -153,9 +157,6 @@ export class FrontendStack extends cdk.Stack {
         s3deploy.Source.data(
           "/index.html",
           htmlContent),
-        s3deploy.Source.data(
-          "/sent.html",
-          fs.readFileSync("./webcontent/sent.html", "utf8")),
       ],
       destinationBucket: websiteBucket,
       distribution: distribution,
