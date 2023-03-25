@@ -26,14 +26,14 @@ export class FrontendStack extends cdk.Stack {
     // ----------------------- Define frontend system ------------------------------
 
     // Define a s3 bucket
-    const websiteBucket = new s3.Bucket(this, "websiteBucket", {
+    const websiteBucket = new s3.Bucket(this, "WebsiteBucket", {
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
     });
 
     // Define an OAI for s3 bucket
-    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, "originAccessIdentity", { comment: `identity-for-S3` });
+    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, "OriginAccessIdentity", { comment: `identity-for-S3` });
 
     // Define a bucket policy
     const S3BucketPolicy = new iam.PolicyStatement({
@@ -90,7 +90,7 @@ export class FrontendStack extends cdk.Stack {
     });
 
     // Define a distribution for s3 bucket
-    const distribution = new cloudfront.Distribution(this, "distribution", {
+    const distribution = new cloudfront.Distribution(this, "Distribution", {
       defaultBehavior: {
         origin: new origins.S3Origin(websiteBucket, {
           originAccessIdentity,
@@ -102,7 +102,7 @@ export class FrontendStack extends cdk.Stack {
     });
 
     // Define an APIGateway REST API
-    const apiGateway = new apigw.RestApi(this, "apiGateway", {
+    const apiGateway = new apigw.RestApi(this, "ApiGateway", {
       restApiName: "diggin-in-the-crates"
     });
 

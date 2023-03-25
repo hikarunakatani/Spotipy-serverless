@@ -22,14 +22,14 @@ export class BackendStack extends cdk.Stack {
     // ----------------------- Define backend system ------------------------------
 
     // Define a topic for lambda
-    const topic = new Topic(this, "topic", {
+    const topic = new Topic(this, "Topic", {
       displayName: "Topic sent from Lambda",
     });
 
     topic.addSubscription(new EmailSubscription(props.emailAddress));
 
     // Store secret values for Secret Manager
-    const secret = new secretsmanager.Secret(this, "secret", {
+    const secret = new secretsmanager.Secret(this, "Secret", {
       generateSecretString: {
         secretStringTemplate: JSON.stringify(secretValue),
         generateStringKey: "password",
@@ -37,7 +37,7 @@ export class BackendStack extends cdk.Stack {
     });
 
     // Define a role for lambda
-    const lambdaRole = new iam.Role(this, "lambdaRole", {
+    const lambdaRole = new iam.Role(this, "LambdaRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
     });
 
@@ -53,13 +53,13 @@ export class BackendStack extends cdk.Stack {
     );
 
     // Define a lambda layer
-    const lambdaLayer = new lambda.LayerVersion(this, "lambdaLayer", {
+    const lambdaLayer = new lambda.LayerVersion(this, "LambdaLayer", {
       code: lambda.AssetCode.fromAsset("lambda_layer"),
       compatibleRuntimes: [lambda.Runtime.PYTHON_3_9],
     });
 
     // Define a lambda Function
-    const lambdaFunc = new lambda.Function(this, "lambdaFunc", {
+    const lambdaFunc = new lambda.Function(this, "LambdaFunc", {
       functionName: "Spotipy",
       runtime: lambda.Runtime.PYTHON_3_9,
       code: lambda.Code.fromAsset("lambda"),
@@ -77,7 +77,7 @@ export class BackendStack extends cdk.Stack {
     this.lambdaFunc = lambdaFunc
 
     // Define an EventBridge rule
-    const ruleToInvokeLambda = new Rule(this, "ruleToInvokeLambda", {
+    const ruleToInvokeLambda = new Rule(this, "RuleToInvokeLambda", {
       schedule: Schedule.cron({
         minute: "0",
         hour: "15",
