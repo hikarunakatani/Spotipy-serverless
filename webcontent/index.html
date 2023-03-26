@@ -1,21 +1,43 @@
+<!DOCTYPE html>
 <html>
 
 <head>
-    <title>Diggin' In The Crates</title>
+  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Diggin' In The Crates</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    function submitForm() {
+      var trackNum = $("#track_num").val();
+
+      $.ajax({
+        url: "APIEndpoint" + "async",
+        type: "POST",
+        data: { track_num: trackNum },
+        contentType: "application/x-www-form-urlencoded",
+        success: function (response) {
+          if (response.statusCode === 202) {
+            alert('Your process has been succeeded.');
+          } else {
+            alert('Unexpected response: ' + response.statusCode);
+          }
+        },
+        error: function (xhr, status, error) {
+          alert('API call failed: ' + error);
+          console.log(xhr, status, error);
+        }
+      });
+    }
+  </script>
 </head>
 
 <body>
-    <h1>Welcome to Diggin' In The Crates</h1>
-    <form action="APIEndpointasync" method="post">
-        <div>
-            <label>Please put the number of songs to add to your playlist.</label>
-            <input name="track_num" id="track_num" value="1">
-        </div>
-        <div>
-            <input type="submit" value="Execute process">
-        </div>
-    </form>
-    <!--a href="APIEndpoint">Press here to execute process</a -->
+  <h1>Welcome to Diggin' In The Crates</h1>
+  <form>
+    <label for="track_num">Please put the number of songs to add to your playlist:</label>
+    <input type="text" id="track_num" name="track_num" /><br /><br />
+    <button type="button" onclick="submitForm()">Submit</button>
+  </form>
 </body>
 
 </html>
