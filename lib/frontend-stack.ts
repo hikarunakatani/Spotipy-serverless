@@ -157,6 +157,9 @@ export class FrontendStack extends cdk.Stack {
         s3deploy.Source.data(
           "/index.html",
           htmlContent),
+        s3deploy.Source.data(
+          "/style.css",
+          fs.readFileSync("./webcontent/style.css", "utf8")),
       ],
       destinationBucket: websiteBucket,
       distribution: distribution,

@@ -15,18 +15,10 @@
         type: "POST",
         data: { track_num: trackNum },
         contentType: "application/x-www-form-urlencoded",
-        success: function (response) {
-          if (response.statusCode === 202) {
-            alert('Your process has been succeeded.');
-          } else {
-            alert('Unexpected response: ' + response.statusCode);
-          }
-        },
-        error: function (xhr, status, error) {
-          alert('API call failed: ' + error);
-          console.log(xhr, status, error);
-        }
-      });
+      })
+        .always(function () {
+          alert("Your request has been sent to API.");
+        });
     }
   </script>
 </head>
