@@ -18,10 +18,10 @@ export class SpotipyPipelineStack extends cdk.Stack {
             synth: new CodeBuildStep('SynthStep', {
                 input: CodePipelineSource.codeCommit(repo, 'master'),
                 installCommands: [
-                    'npm install -g aws-cdk'
+                    'npm install -g npm',
+                    'npm install -g aws-cdk',
                 ],
                 commands: [
-                    'npm install -g npm',
                     'mkdir -p lambda_layer',
                     'pip install -r requirements.txt -t ./lambda_layer/python/lib/python3.9/site-packages',
                     'npm ci',
@@ -30,7 +30,6 @@ export class SpotipyPipelineStack extends cdk.Stack {
                 ]
                 },
             ),
-            selfMutation: false,
         });
 
         //Adds deploy stage 
@@ -45,6 +44,7 @@ export class SpotipyPipelineStack extends cdk.Stack {
                     ENDPOINT_URL: deploy.APIEndpoint
                 },
                 commands: [
+                    'curl -X POST --data-urlencode "track_num=1" "${ENDPOINT_URL}sync"',
                     'curl -X POST --data-urlencode "track_num=1" "${ENDPOINT_URL}async"'
                 ]
             })
