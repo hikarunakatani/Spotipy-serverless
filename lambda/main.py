@@ -4,6 +4,7 @@ import common
 import argparse
 import random
 import os
+import csv
 
 # For local testing
 local_test_flag = True
@@ -16,7 +17,9 @@ sp = common.authenticate(local_test_flag)
 secret = common.get_secret(local_test_flag)
 username = secret['username']
 playlist_id = secret['playlist_id']
-
+genre_seeds = sp.recommendation_genre_seeds()['genres']
+audio_features_names = ['danceability', 'energy', 'key', 'loudness', 'mode',
+                            'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']
 
 def get_random_search():
     """Get a random character of unicode.
@@ -97,7 +100,50 @@ def diggin_in_the_crate(num_tracks=30, remove_current_items=False):
 
     print("Updated playlist.")
 
+def initialize_data(track, genre):    
 
+    audio_features = []
+    # Initialize correct label of each of 126 genres
+    genre_labels = [0] * 126
+    track_id = track['id']
+    track_audio_features = sp.audio_features(track_id)[0]
+
+    # Obtain audio features from each tracks' metadata
+    for audio_features_name in audio_features_names:
+        audio_features.append(track_audio_features[audio_features_name])
+
+    # Set label of corresponding genre lable to 
+    genre_labels[genre_seeds.index(genre)] = 1
+
+    return audio_features, genre_labels
+
+def get_data(genre):
+    audio_features_data = []
+    genre_labels_data = []
+
+    # Get extra 10 recommended tracks based on tacks id of each track
+    results_genre = sp.recommendations(seed_genres=[genre], limit=10)
+    for track in results_genre['tracks']:
+        audio_features, genre_labels = initialize_data(track, genre)
+        audio_features_data.append(audio_features)
+        genre_labels_data.append(genre_labels)
+        print(f'{genre} audio features has been added.')
+        results_tracks = sp.recommendations(seed_tracks=[track['id']], limit=10)
+        for track in results_tracks['tracks']:
+            audio_features, genre_labels = initialize_data(track, genre)
+            audio_features_data.append(audio_features)
+            genre_labels_data.append(genre_labels)
+            print(f'{genre}-recommended track audio features has been added.')
+
+    with open('./audio_features_data.csv', 'w', newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(audio_features_data)
+
+    with open('./genre_labels_data.csv', 'w', newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(genre_labels_data)
+
+ 
 def main():
     """ main function for local testing
     """
@@ -112,6 +158,8 @@ def main():
 
     parser.add_argument('--remove_current_items', type=bool,
                         help='Whether to remove corrent tracks or not')
+    parser.add_argument('--genre', type=str,
+                        help='song genre to add to playlist')
     args = parser.parse_args()
 
     if args.function == 'ditc':
@@ -120,6 +168,8 @@ def main():
                                 remove_current_items=args.remove_current_items)
         else:
             print("Please set the number of tracks to search.")
+    elif args.function == 'get_data':
+        get_data(args.genre)
     else:
         print("Please specify the fucntion name properly.")
 
