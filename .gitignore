@@ -7,6 +7,7 @@
 *.txt
 node_modules
 lambda_venv
+lambda_layer
 cdk.out
 __pycache__
 # CDK asset staging directory

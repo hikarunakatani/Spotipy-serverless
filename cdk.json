@@ -40,9 +40,9 @@
     "@aws-cdk/aws-iam:standardizedServicePrincipals": true,
     "@aws-cdk/aws-ecs:disableExplicitDeploymentControllerForCircuitBreaker": true,
     "envVals": {
-      "source-repository": "hikarunakatani/spotipy-serverless-app",
-      "source-branch": "master",
-      "source-connection-arn": "arn:aws:codestar-connections:ap-northeast-1:533859808379:connection/e217769a-7240-4fbc-9641-c2e275262a3d",
+      "sourceRepository": "hikarunakatani/spotipy-serverless-app",
+      "sourceBranch": "master",
+      "sourceConnectionArn": "arn:aws:codestar-connections:ap-northeast-1:533859808379:connection/e217769a-7240-4fbc-9641-c2e275262a3d",
       "emailAddress": "hikamichael@hotmail.co.jp",
       "ipAddress": "60.68.5.192/32"
     }

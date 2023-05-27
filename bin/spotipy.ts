@@ -9,17 +9,27 @@ const app = new cdk.App();
 
 const pjPrefix = 'Spotipy';
 
-const repo = app.node.tryGetContext('source-repository');
-const branch = app.node.tryGetContext('source-branch');
-const connectionArn = app.node.tryGetContext('source-connection-arn');
-
 // ----------------------- Load context variables ------------------------------
+const envVals = app.node.tryGetContext('envVals')
+
+// For pipeline deployment
+const repo = envVals['sourceRepository'];
+const branch = envVals['sourceBranch'];
+const connectionArn = envVals['sourceConnectionArn'];
+
+new SpotipyPipelineStack(app, `${pjPrefix}PipelineStack`, {
+    repo: repo,
+    branch: branch,
+    connectionArn: connectionArn,
+});
+
+
+//// For local deployment
 //const envVals = app.node.tryGetContext('envVals')
 //
 //const emailAddress = envVals['emailAddress'];
 //const ipAddress = envVals['ipAddress'];
 //
-//// For local deployment
 //const backend = new BackendStack(app, `${pjPrefix}BackendStack`, {
 //    emailAddress: emailAddress,
 //});
@@ -30,11 +40,5 @@ const connectionArn = app.node.tryGetContext('source-connection-arn');
 //});
 //frontend.addDependency(backend); 
 
-// For pipeline deployment
-new SpotipyPipelineStack(app, `${pjPrefix}PipelineStack`, {
-    repo,
-    branch,
-    connectionArn,
-});
 
 
