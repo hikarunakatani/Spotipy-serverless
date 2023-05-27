@@ -7,7 +7,6 @@ import { EmailSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
-import secretValue from "../secret.json";
 
 export interface BackendStackProps extends cdk.StackProps {
   emailAddress: string;

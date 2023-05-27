@@ -115,12 +115,14 @@ def initialize_data(track_ids, genre):
                                         for audio_features_name in audio_features_names]
             audio_features.append(extracted_audio_features)
 
-    # Set label of corresponding genre lable to
-    for genre_label in genre_labels:
-        genre_label[genre_seeds.index(genre)] = 1
+            # Set label of corresponding genre lable to
+            for genre_label in genre_labels:
+                genre_label[genre_seeds.index(genre)] = 1
+        else:
+            print("track_audio_features is None.")
 
-    sp.user_playlist_add_tracks(
-        username, playlist_id, track_ids)
+    #sp.user_playlist_add_tracks(
+    #    username, playlist_id, track_ids)
 
     return audio_features, genre_labels
 

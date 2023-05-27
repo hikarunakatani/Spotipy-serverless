@@ -139,7 +139,7 @@ for genre in "${genre_seeds[@]}"; do
     # Retry the process for the genre until successful
     while [ $success = false ]; do
         # Execute the Python program for the genre
-        python main.py get_data --genre "$genre" --limit 1
+        python main.py get_data --genre "$genre" --limit 100
 
         # Check the exit code of the Python program
         if [ $? -eq 0 ]; then
