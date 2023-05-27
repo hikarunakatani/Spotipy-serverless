@@ -4,8 +4,14 @@ import { Construct } from 'constructs'
 import { CodeBuildStep, CodePipeline, CodePipelineSource } from 'aws-cdk-lib/pipelines';
 import { SpotipyPipelineStage } from '../lib/pipeline-stage'
 
+interface SpotipyPipelineStackProps extends cdk.StackProps {
+    repo: string;
+    branch: string;
+    connectionArn: string;
+}
+
 export class SpotipyPipelineStack extends cdk.Stack {
-    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    constructor(scope: Construct, id: string, props: SpotipyPipelineStackProps) {
         super(scope, id, props);
 
         //Creates CodeCommit repository called 'SpoityRepo'
@@ -16,7 +22,12 @@ export class SpotipyPipelineStack extends cdk.Stack {
         const pipeline = new CodePipeline(this, 'Pipeline', {
             pipelineName: 'SpotipyPipeline',
             synth: new CodeBuildStep('SynthStep', {
-                input: CodePipelineSource.codeCommit(repo, 'master'),
+                //input: CodePipelineSource.codeCommit(repo, 'master'),
+                input: CodePipelineSource.connection(
+                    props.repo, props.branch, {
+                    connectionArn: props.connectionArn,
+                }),
+
                 installCommands: [
                     'npm install -g npm',
                     'npm install -g aws-cdk',
@@ -28,7 +39,7 @@ export class SpotipyPipelineStack extends cdk.Stack {
                     'npm run build',
                     'npx cdk synth'
                 ]
-                },
+            },
             ),
         });
 

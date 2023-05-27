@@ -29,12 +29,7 @@ export class BackendStack extends cdk.Stack {
     topic.addSubscription(new EmailSubscription(props.emailAddress));
 
     // Store secret values for Secret Manager
-    const secret = new secretsmanager.Secret(this, "Secret", {
-      generateSecretString: {
-        secretStringTemplate: JSON.stringify(secretValue),
-        generateStringKey: "password",
-      },
-    });
+    const secret = new secretsmanager.Secret(this, "Secret", {});
 
     // Define a role for lambda
     const lambdaRole = new iam.Role(this, "LambdaRole", {

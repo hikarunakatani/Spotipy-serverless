@@ -19,7 +19,8 @@ username = secret['username']
 playlist_id = secret['playlist_id']
 genre_seeds = sp.recommendation_genre_seeds()['genres']
 audio_features_names = ['danceability', 'energy', 'key', 'loudness', 'mode',
-                            'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']
+                        'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']
+
 
 def get_random_search():
     """Get a random character of unicode.
@@ -43,22 +44,21 @@ def get_random_search():
 
 
 def diggin_in_the_crate(num_tracks=30, remove_current_items=False):
-    """Search completely random tracks.
-
+    """
+    Search completely random tracks.
 
     Args:
-        num_tracks (int, optional): A number of tracks to add to playlist. Defaults to 30.
-        remove_current_items (bool, optional): Whether to remove current items in playlist or not.
+        num_tracks (int, optional): Number of tracks to add to the playlist. Defaults to 30.
+        remove_current_items (bool, optional): Whether to remove current items in the playlist or not.
     """
 
+    # Retrieve current items in the playlist
     current_items = sp.playlist_items(playlist_id)
 
-    # Delete existing tracks
-    if current_items['items'] and remove_current_items:
-        remove_items = []
-        for items in current_items['items']:
-            remove_items.append(items['track']['uri'])
-
+    # Delete existing tracks if remove_current_items is True
+    if remove_current_items and current_items['items']:
+        remove_items = [item['track']['uri']
+                        for item in current_items['items']]
         sp.playlist_remove_all_occurrences_of_items(playlist_id, remove_items)
         print("Removed current tracks.")
 
@@ -67,13 +67,12 @@ def diggin_in_the_crate(num_tracks=30, remove_current_items=False):
     country_num = len(country_codes)
 
     track_ids = []
-    track_artists = []
 
     # Add tracks
     print("Start searching...")
 
     while len(track_ids) < num_tracks:
-        random_market = country_codes[random.randint(0, country_num - 1)]
+        random_market = random.choice(country_codes)
         query = get_random_search()
         random_offset = random.randint(0, 999)
         results = sp.search(type='track', offset=random_offset,
@@ -82,68 +81,95 @@ def diggin_in_the_crate(num_tracks=30, remove_current_items=False):
         if results and len(results['tracks']['items']) >= 1:
             track = results['tracks']['items'][0]
             track_name = track['name']
-            # When there are multiple artists
-            if len(track['artists']) >= 2:
-                 for artist in track['artists']:
-                    track_artists.append(artist['name'])
-            else:
-                track_artists.append(
-                    track['artists'][0]['name'])
+            track_artists = [artist['name'] for artist in track['artists']]
 
             # Add track ids
-            track_ids.append((track['id']))
-            sp.user_playlist_add_tracks(
-                username, playlist_id, track_ids[-1:])
+            track_ids.append(track['id'])
+            sp.user_playlist_add_tracks(username, playlist_id, [track_ids[-1]])
             print(
-                f"Added {track_name} - {','.join(track_artists)} to the playlist.")
-            track_artists.clear()
+                f"Added {track_name} - {', '.join(track_artists)} to the playlist.")
 
     print("Updated playlist.")
 
-def initialize_data(track, genre):    
 
-    audio_features = []
+def initialize_data(track_ids, genre):
+    """_summary_
+
+    Args:
+        track_ids (_type_): _description_
+        genre (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+
     # Initialize correct label of each of 126 genres
-    genre_labels = [0] * 126
-    track_id = track['id']
-    track_audio_features = sp.audio_features(track_id)[0]
+    genre_labels = [[0] * 126 for _ in range(len(track_ids))]
+    audio_features = []
 
+    batch_audio_features = sp.audio_features(track_ids)
     # Obtain audio features from each tracks' metadata
-    for audio_features_name in audio_features_names:
-        audio_features.append(track_audio_features[audio_features_name])
+    for track_audio_features in batch_audio_features:
+        if track_audio_features:
+            extracted_audio_features = [track_audio_features[audio_features_name]
+                                        for audio_features_name in audio_features_names]
+            audio_features.append(extracted_audio_features)
 
-    # Set label of corresponding genre lable to 
-    genre_labels[genre_seeds.index(genre)] = 1
+    # Set label of corresponding genre lable to
+    for genre_label in genre_labels:
+        genre_label[genre_seeds.index(genre)] = 1
+
+    sp.user_playlist_add_tracks(
+        username, playlist_id, track_ids)
 
     return audio_features, genre_labels
 
-def get_data(genre):
+
+def get_data(genre, limit):
+
     audio_features_data = []
     genre_labels_data = []
 
-    # Get extra 10 recommended tracks based on tacks id of each track
-    results_genre = sp.recommendations(seed_genres=[genre], limit=10)
+    # Get tracks based on genre
+    results_genre = sp.recommendations(seed_genres=[genre], limit=limit)
+    track_ids = [track['id'] for track in results_genre['tracks']]
+    audio_features, genre_labels = initialize_data(track_ids, genre)
+    audio_features_data.append(audio_features)
+    genre_labels_data.append(genre_labels)
+    print(f'{genre} audio features has been added.')
+
     for track in results_genre['tracks']:
-        audio_features, genre_labels = initialize_data(track, genre)
+        # Get recommended tracks based on tacks id of each track
+        results_tracks = sp.recommendations(
+            seed_tracks=[track['id']], limit=limit)
+        track_ids = [track['id'] for track in results_tracks['tracks']]
+        audio_features, genre_labels = initialize_data(track_ids, genre)
         audio_features_data.append(audio_features)
         genre_labels_data.append(genre_labels)
-        print(f'{genre} audio features has been added.')
-        results_tracks = sp.recommendations(seed_tracks=[track['id']], limit=10)
-        for track in results_tracks['tracks']:
-            audio_features, genre_labels = initialize_data(track, genre)
-            audio_features_data.append(audio_features)
-            genre_labels_data.append(genre_labels)
-            print(f'{genre}-recommended track audio features has been added.')
+        print(f'{genre}-recommended track audio features has been added.')
 
-    with open('./audio_features_data.csv', 'w', newline="") as f:
+    with open('./data/audio_features_data_{}.csv'.format(genre), 'w', newline="") as f:
         writer = csv.writer(f)
-        writer.writerows(audio_features_data)
+        # Delete extra dimension of array
+        writer.writerows(sum(audio_features_data, []))
 
-    with open('./genre_labels_data.csv', 'w', newline="") as f:
+    with open('./data/genre_labels_data_{}.csv'.format(genre), 'w', newline="") as f:
         writer = csv.writer(f)
-        writer.writerows(genre_labels_data)
+        # Delete extra dimension of array
+        writer.writerows(sum(genre_labels_data, []))
 
- 
+
+def delete_tracks():
+    while sp.playlist_items(playlist_id)['items']:
+        current_items = sp.playlist_items(playlist_id)
+        remove_items = []
+        for items in current_items['items']:
+            remove_items.append(items['track']['uri'])
+
+        sp.playlist_remove_all_occurrences_of_items(playlist_id, remove_items)
+    print("Removed current tracks.")
+
+
 def main():
     """ main function for local testing
     """
@@ -160,6 +186,8 @@ def main():
                         help='Whether to remove corrent tracks or not')
     parser.add_argument('--genre', type=str,
                         help='song genre to add to playlist')
+    parser.add_argument('--limit', type=int,
+                        help='song genre to add to playlist')
     args = parser.parse_args()
 
     if args.function == 'ditc':
@@ -169,7 +197,9 @@ def main():
         else:
             print("Please set the number of tracks to search.")
     elif args.function == 'get_data':
-        get_data(args.genre)
+        get_data(genre=args.genre, limit=args.limit)
+    elif args.function == 'delete_tracks':
+        delete_tracks()
     else:
         print("Please specify the fucntion name properly.")
 
