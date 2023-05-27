@@ -104,7 +104,7 @@ def initialize_data(track_ids, genre):
     """
 
     # Initialize correct label of each of 126 genres
-    genre_labels = [[0] * 126 for _ in range(len(track_ids))]
+    genre_labels = []
     audio_features = []
 
     batch_audio_features = sp.audio_features(track_ids)
@@ -116,18 +116,24 @@ def initialize_data(track_ids, genre):
             audio_features.append(extracted_audio_features)
 
             # Set label of corresponding genre lable to
-            for genre_label in genre_labels:
-                genre_label[genre_seeds.index(genre)] = 1
+            genre_label = [1 if i == genre_seeds.index(genre) else 0 for i in range(126)]
+            genre_labels.append(genre_label)
         else:
             print("track_audio_features is None.")
 
-    #sp.user_playlist_add_tracks(
+    # sp.user_playlist_add_tracks(
     #    username, playlist_id, track_ids)
 
     return audio_features, genre_labels
 
 
 def get_data(genre, limit):
+    """_summary_
+
+    Args:
+        genre (_type_): _description_
+        limit (_type_): _description_
+    """
 
     audio_features_data = []
     genre_labels_data = []
