@@ -10,11 +10,11 @@ import json
 scope = 'playlist-read-private playlist-modify-public'
 
 
-def authenticate(local_test_flag=False):
+def authenticate(LOCAL_TEST_FLAG=False):
     """Execute authentication process on spotify.
     """
 
-    secret = get_secret(local_test_flag)
+    secret = get_secret(LOCAL_TEST_FLAG)
 
     token = util.prompt_for_user_token(
         secret['username'], scope, secret['my_id'], secret['my_secret'], secret['redirect_uri'])
@@ -24,14 +24,14 @@ def authenticate(local_test_flag=False):
     return sp
 
 
-def get_secret(local_test_flag=False):
+def get_secret(LOCAL_TEST_FLAG=False):
     """Get secrets values from AWS Secrets Manager.
 
     Args:
-        local_test_flag (bool, optional): Secret values are obtained from local json file when it's True. Defaults to False.
+        LOCAL_TEST_FLAG (bool, optional): Secret values are obtained from local json file when it's True. Defaults to False.
     """
 
-    if local_test_flag == True:
+    if LOCAL_TEST_FLAG == True:
         json_open = open('../secret.json', 'r')
         json_load = json.load(json_open)
         secret = json_load

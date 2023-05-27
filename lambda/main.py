@@ -1,20 +1,19 @@
-import spotipy
-import spotipy.util as util
-import common
 import argparse
 import random
 import os
 import csv
+import common
+
 
 # For local testing
-local_test_flag = True
+LOCAL_TEST_FLAG = True
 
 # Unflag local testing flag when runnig on AWS environment
 if os.getenv('ON_AWS'):
-    local_test_flag = False
+    LOCAL_TEST_FLAG = False
 
-sp = common.authenticate(local_test_flag)
-secret = common.get_secret(local_test_flag)
+sp = common.authenticate(LOCAL_TEST_FLAG)
+secret = common.get_secret(LOCAL_TEST_FLAG)
 username = secret['username']
 playlist_id = secret['playlist_id']
 genre_seeds = sp.recommendation_genre_seeds()['genres']
@@ -144,7 +143,6 @@ def get_data(genre, limit):
     audio_features, genre_labels = initialize_data(track_ids, genre)
     audio_features_data.append(audio_features)
     genre_labels_data.append(genre_labels)
-    print(f'{genre} audio features has been added.')
 
     for track in results_genre['tracks']:
         # Get recommended tracks based on tacks id of each track
@@ -154,7 +152,8 @@ def get_data(genre, limit):
         audio_features, genre_labels = initialize_data(track_ids, genre)
         audio_features_data.append(audio_features)
         genre_labels_data.append(genre_labels)
-        print(f'{genre}-recommended track audio features has been added.')
+
+    print(f'{genre} track audio features have been added.')
 
     with open('./data/audio_features_data_{}.csv'.format(genre), 'w', newline="") as f:
         writer = csv.writer(f)

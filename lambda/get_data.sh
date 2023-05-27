@@ -129,10 +129,15 @@ genre_seeds=(
     "work-out"
     "world-music"
 )
+limit=100
 
-# Loop through each genre seed
-for genre in "${genre_seeds[@]}"; do
-    echo "Processing $genre..."
+# Get the number of available processors (CPU cores)
+max_processes=$(nproc)
+echo "Maximum number of processes: $max_processes"
+
+# Function to process a genre
+process_genre() {
+    local genre="$1"
 
     success=false
 
@@ -149,4 +154,40 @@ for genre in "${genre_seeds[@]}"; do
             echo "Error occurred while processing $genre. Retrying..."
         fi
     done
+}
+
+# Loop through each genre seed and process them with limited parallelism
+for genre in "${genre_seeds[@]}"; do
+    echo "Processing $genre..."
+
+    # Check if any CSV files already exist
+    csv_files=("./data/*_${genre}.csv")
+    if [ $(ls -1 ${csv_files[@]} 2>/dev/null | wc -l) -gt 0 ]; then
+        echo "Files for $genre already exist. Skipping..."
+        continue
+    fi
+
+    # Limit the number of concurrent processes
+    current_processes=$(jobs -p | wc -l)
+    while [ $current_processes -ge $max_processes ]; do
+        sleep 1
+        current_processes=$(jobs -p | wc -l)
+    done
+
+    # Run the process_genre function in the background
+    process_genre "$genre" &
 done
+
+# Wait for all background processes to finish
+wait
+
+
+# Merge audio_features_data
+echo "Merging audio_features_data..."
+cat ./data/audio_features_data_*.csv > ./data/merged_audio_features_data.csv
+echo "Merged audio_features_data file created."
+
+# Merge genre_labels_data
+echo "Merging genre_labels_data..."
+cat ./data/genre_labels_data_*.csv > ./data/merged_genre_labels_data.csv
+echo "Merged genre_labels_data file created."
